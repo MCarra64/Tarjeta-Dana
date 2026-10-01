@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>Tarjeta para Dana</title>
+    <audio id="slapSound" src="slap.mp3" preload="auto"></audio>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Baloo 2", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+            background: radial-gradient(circle at 50% -10%, #fffaf0 0%, #ffeec2 38%, #ffe0e9 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow: hidden;
+            padding: 12px;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        #confetti {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .card {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: clamp(4px, 1.5vh, 14px);
+            text-align: center;
+        }
+
+        /* ---------- "Press Pompompurin" ---------- */
+        .prompt {
+            margin: 0;
+            font-size: clamp(17px, 4.2vw, 28px);
+            font-weight: 800;
+            letter-spacing: .05em;
+            color: #9a6b2f;
+            text-shadow: 0 2px 0 #fff;
+            animation: bob 1.8s ease-in-out infinite;
+        }
+
+        @keyframes bob {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(-1deg);
+            }
+
+            50% {
+                transform: translateY(-7px) rotate(1deg);
+            }
+        }
+
+        /* ---------- Pompompurin ---------- */
+        .stage {
+            line-height: 0;
+        }
+
+        #purin {
+            width: clamp(190px, 40vh, 320px);
+            height: auto;
+            max-width: 85vw;
+            cursor: pointer;
+            outline: none;
+            display: block;
+            transform-origin: 50% 94%;
+            filter: drop-shadow(0 14px 18px rgba(170, 130, 60, .22));
+            -webkit-user-drag: none;
+            user-select: none;
+        }
+
+        #purin:focus-visible {
+            filter: drop-shadow(0 0 12px #ffb84d);
+        }
+
+        #purin.stretch {
+            animation: catStretch .75s cubic-bezier(.3, 1.25, .5, 1);
+        }
+
+        @keyframes catStretch {
+            0% {
+                transform: scale(1, 1);
+            }
+
+            18% {
+                transform: scale(.90, 1.20);
+            }
+
+            38% {
+                transform: scale(1.10, .88);
+            }
+
+            58% {
+                transform: scale(.96, 1.08);
+            }
+
+            78% {
+                transform: scale(1.03, .97);
+            }
+
+            100% {
+                transform: scale(1, 1);
+            }
+        }
+
+        /* ---------- Happy Birthday ---------- */
+        .hb {
+            margin: 0;
+            min-height: 1.15em;
+            font-size: clamp(26px, 7.5vw, 54px);
+            font-weight: 900;
+            letter-spacing: .01em;
+            background: linear-gradient(90deg, #ff5f7e, #ffb03a, #3ddc84, #4d9bff, #c471ed, #ff5f7e);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            -webkit-text-fill-color: transparent;
+            opacity: 0;
+            transform: scale(.3);
+            will-change: transform, opacity;
+        }
+
+        .hb.show {
+            animation: hbPop .9s cubic-bezier(.2, 1.5, .4, 1) forwards,
+                hbHue 3s linear infinite;
+        }
+
+        @keyframes hbPop {
+            0% {
+                opacity: 0;
+                transform: scale(.25) rotate(-12deg);
+            }
+
+            55% {
+                opacity: 1;
+                transform: scale(1.18) rotate(4deg);
+            }
+
+            75% {
+                transform: scale(.94) rotate(-2deg);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        @keyframes hbHue {
+            from {
+                background-position: 0% 50%;
+            }
+
+            to {
+                background-position: 300% 50%;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .prompt {
+                animation: none;
+            }
+        }
+
+        #purin.slap {
+            animation: slap .5s ease-in-out;
+        }
+
+        @keyframes slap {
+            0% {
+                transform: translateX(0) rotate(0);
+            }
+
+            15% {
+                transform: translateX(-18px) rotate(-7deg);
+            }
+
+            30% {
+                transform: translateX(20px) rotate(8deg);
+            }
+
+            45% {
+                transform: translateX(-15px) rotate(-6deg);
+            }
+
+            60% {
+                transform: translateX(12px) rotate(5deg);
+            }
+
+            75% {
+                transform: translateX(-7px) rotate(-3deg);
+            }
+
+            100% {
+                transform: translateX(0) rotate(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="confetti"></canvas>
+
+    <main class="card">
+        <p class="prompt" id="prompt">Press Pompompurin</p>
+
+        <div class="stage">
+            <img id="purin" src="pompompurin.png" alt="Imagen de cumpleaños" role="button" tabindex="0">
+        </div>
+
+
+        <h1 class="hb" id="hb">Happy Birthday Dana! 🎂</h1>
+    </main>
+
+    <script>
+        (function () {
+            "use strict";
+
+            /* =========================================================
+               1) SONIDO: espantasuegras (matasuegras) con Web Audio API
+               ========================================================= */
+            let audioCtx = null;
+
+            function getCtx() {
+                if (!audioCtx) {
+                    const AC = window.AudioContext || window.webkitAudioContext;
+                    audioCtx = new AC();
+                }
+                if (audioCtx.state === "suspended") audioCtx.resume();
+                return audioCtx;
+            }
+
+            function makeNoiseBuffer(ac, seconds) {
+                const len = Math.floor(ac.sampleRate * seconds);
+                const buf = ac.createBuffer(1, len, ac.sampleRate);
+                const data = buf.getChannelData(0);
+                for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+                return buf;
+            }
+
+            function playPartyHorn() {
+                const ac = getCtx();
+                const t0 = ac.currentTime + 0.01;
+                const dur = 0.9;
+
+                // Compresor para evitar saturación si pulsas muchas veces
+                const comp = ac.createDynamicsCompressor();
+                comp.threshold.value = -12;
+                comp.ratio.value = 8;
+                comp.connect(ac.destination);
+
+                const master = ac.createGain();
+                master.gain.value = 0.75;
+                master.connect(comp);
+
+                /* ---- "Brrrrr" del matasuegras ---- */
+                const osc = ac.createOscillator();
+                osc.type = "sawtooth";
+
+                const bp = ac.createBiquadFilter();
+                bp.type = "bandpass";
+                bp.frequency.value = 820;
+                bp.Q.value = 1.1;
+
+                const buzz = ac.createGain();
+                buzz.gain.setValueAtTime(0.0001, t0);
+                buzz.gain.linearRampToValueAtTime(0.22, t0 + 0.05);
+                buzz.gain.setValueAtTime(0.22, t0 + dur - 0.22);
+                buzz.gain.linearRampToValueAtTime(0.0001, t0 + dur);
+
+                // Vibrato de amplitud => sonido rasposo
+                const lfo = ac.createOscillator();
+                lfo.type = "square";
+                lfo.frequency.setValueAtTime(28, t0);
+                lfo.frequency.linearRampToValueAtTime(46, t0 + dur * 0.6);
+
+                const lfoAmt = ac.createGain();
+                lfoAmt.gain.setValueAtTime(0.0001, t0);
+                lfoAmt.gain.linearRampToValueAtTime(0.13, t0 + 0.06);
+                lfoAmt.gain.setValueAtTime(0.13, t0 + dur - 0.25);
+                lfoAmt.gain.linearRampToValueAtTime(0.0001, t0 + dur);
+
+                lfo.connect(lfoAmt);
+                lfoAmt.connect(buzz.gain);
+
+                // Tono que sube al desenrollarse
+                osc.frequency.setValueAtTime(150, t0);
+                osc.frequency.exponentialRampToValueAtTime(430, t0 + 0.22);
+                osc.frequency.exponentialRampToValueAtTime(320, t0 + dur);
+
+                osc.connect(bp);
+                bp.connect(buzz);
+                buzz.connect(master);
+
+                osc.start(t0); osc.stop(t0 + dur + 0.05);
+                lfo.start(t0); lfo.stop(t0 + dur + 0.05);
+
+                /* ---- Aire / papel desenrollándose ---- */
+                const noise = ac.createBufferSource();
+                noise.buffer = makeNoiseBuffer(ac, dur + 0.2);
+
+                const nf = ac.createBiquadFilter();
+                nf.type = "bandpass";
+                nf.Q.value = 0.8;
+                nf.frequency.setValueAtTime(600, t0);
+                nf.frequency.exponentialRampToValueAtTime(1900, t0 + dur);
+
+                const ng = ac.createGain();
+                ng.gain.setValueAtTime(0.0001, t0);
+                ng.gain.linearRampToValueAtTime(0.07, t0 + 0.06);
+                ng.gain.linearRampToValueAtTime(0.0001, t0 + dur);
+
+                noise.connect(nf);
+                nf.connect(ng);
+                ng.connect(master);
+
+                noise.start(t0);
+                noise.stop(t0 + dur + 0.1);
+            }
+
+            /* =========================================================
+               2) CONFETI en canvas
+               ========================================================= */
+            const canvas = document.getElementById("confetti");
+            const cctx = canvas.getContext("2d");
+            const DPR = Math.min(window.devicePixelRatio || 1, 2);
+            let W = 0, H = 0;
+
+            function resizeCanvas() {
+                W = window.innerWidth;
+                H = window.innerHeight;
+                canvas.width = Math.floor(W * DPR);
+                canvas.height = Math.floor(H * DPR);
+                canvas.style.width = W + "px";
+                canvas.style.height = H + "px";
+                cctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+            }
+            resizeCanvas();
+            window.addEventListener("resize", resizeCanvas);
+
+            const COLORS = ["#FF5F7E", "#FFC93C", "#4CD97B", "#4D9BFF",
+                "#C471ED", "#FF9F45", "#5FE3E0"];
+
+            const parts = [];
+            let running = false;
+
+            const rand = (a, b) => a + Math.random() * (b - a);
+            const pickColor = () => COLORS[(Math.random() * COLORS.length) | 0];
+            const pickShape = () => (Math.random() < 0.25 ? "circle" : "rect");
+
+            function spawnConfetti() {
+                const r = purin.getBoundingClientRect();
+                const cx = r.left + r.width / 2;
+                const cy = r.top + r.height * 0.55;
+
+                // Estallido desde Pompompurin
+                for (let i = 0; i < 80; i++) {
+                    const a = Math.random() * Math.PI * 2;
+                    const sp = rand(2, 10);
+                    parts.push({
+                        x: cx, y: cy,
+                        vx: Math.cos(a) * sp,
+                        vy: Math.sin(a) * sp - rand(2, 6),
+                        w: rand(6, 13), h: rand(8, 16),
+                        color: pickColor(),
+                        rot: Math.random() * Math.PI * 2,
+                        vr: rand(-0.25, 0.25),
+                        drag: 0.94, grav: 0.35,
+                        shape: pickShape()
+                    });
+                }
+
+                // Lluvia desde arriba
+                for (let i = 0; i < 70; i++) {
+                    parts.push({
+                        x: Math.random() * W,
+                        y: rand(-H * 0.6, -20),
+                        vx: rand(-1.2, 1.2),
+                        vy: rand(1.5, 4),
+                        w: rand(6, 13), h: rand(8, 16),
+                        color: pickColor(),
+                        rot: Math.random() * Math.PI * 2,
+                        vr: rand(-0.2, 0.2),
+                        drag: 0.995, grav: 0.02,
+                        shape: pickShape()
+                    });
+                }
+
+                if (!running) {
+                    running = true;
+                    requestAnimationFrame(tick);
+                }
+            }
+
+            function tick() {
+                cctx.clearRect(0, 0, W, H);
+
+                for (let i = parts.length - 1; i >= 0; i--) {
+                    const p = parts[i];
+
+                    p.vx *= p.drag;
+                    p.vy = p.vy * p.drag + p.grav;
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.rot += p.vr;
+
+                    if (p.y > H + 80 || p.x < -100 || p.x > W + 100) {
+                        parts.splice(i, 1);
+                        continue;
+                    }
+
+                    cctx.save();
+                    cctx.translate(p.x, p.y);
+                    cctx.rotate(p.rot);
+                    cctx.fillStyle = p.color;
+
+                    if (p.shape === "circle") {
+                        cctx.beginPath();
+                        cctx.ellipse(0, 0, p.w / 2, p.h / 2, 0, 0, Math.PI * 2);
+                        cctx.fill();
+                    } else {
+                        cctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+                    }
+                    cctx.restore();
+                }
+
+                if (parts.length === 0) {
+                    running = false;
+                    cctx.clearRect(0, 0, W, H);
+                    return;
+                }
+                requestAnimationFrame(tick);
+            }
+
+            /* =========================================================
+               3) INTERACCIÓN
+               ========================================================= */
+            const purin = document.getElementById("purin");
+            const hb = document.getElementById("hb");
+
+            function celebrate() {
+                const isSlap = Math.random() < 0.15;
+
+                if (isSlap) {
+                    surpriseSlap();
+                    return;
+                }
+
+                playPartyHorn();
+
+                purin.classList.remove("stretch");
+                void purin.offsetWidth;
+                purin.classList.add("stretch");
+
+                hb.classList.remove("show");
+                void hb.offsetWidth;
+                hb.classList.add("show");
+
+                spawnConfetti();
+            }
+
+            function surpriseSlap() {
+                const prompt = document.getElementById("prompt");
+                const slapSound = document.getElementById("slapSound");
+
+                // Cambiar imagen
+                purin.src = "pompompurin-slap.png";
+
+                // Cambiar texto superior
+                prompt.textContent = "OKAY THAT'S ENOUGH";
+
+                // Sonido
+                slapSound.currentTime = 0;
+                slapSound.play().catch(() => { });
+
+                // Animación
+                purin.classList.remove("stretch");
+                void purin.offsetWidth;
+                purin.classList.add("slap");
+
+                // Confeti
+                spawnConfetti();
+
+                // Volver a la normalidad después de 2.5 segundos
+                setTimeout(() => {
+                    purin.src = "pompompurin.png";
+                    prompt.textContent = "Press Pompompurin";
+                    purin.classList.remove("slap");
+                }, 2500);
+            }
+
+            purin.addEventListener("pointerdown", function (e) {
+                e.preventDefault();
+                celebrate();
+            });
+
+            // Accesible con teclado
+            purin.addEventListener("keydown", function (e) {
+                if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+                    e.preventDefault();
+                    celebrate();
+                }
+            });
+        })();
+    </script>
+</body>
+
+</html>
